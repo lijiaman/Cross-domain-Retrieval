@@ -21,15 +21,16 @@ street_network = alex.ALEXNET(alex_npy_path=npy_path, trainable=False)
 
 street_network.build(rgb=x_street, flag="street", train_mode=train_mode)
 
-y_street = street_network.relu7
+
+y_street = street_network.relu6
 
 sess.run(tf.initialize_all_variables())
-street_path = '/ais/gobi4/fashion/retrieval/part_street_features.json'
+street_path = '/ais/gobi4/fashion/retrieval/total_street_features.json'
 img_path = '/ais/gobi4/fashion/data/Cross-domain-Retrieval/'
 with open(street_path, 'a') as jsonfile:
     with open('/ais/gobi4/fashion/data/Cross-domain-Retrieval/list_test_triplet_category.txt', 'rb') as f:
-        data = random.sample(f.readlines(), 200)
-        #data = f.readlines()
+        #data = random.sample(f.readlines(), 200)
+        data = f.readlines()
         for line in data:
             line = line.split()
             x = input.load_image(img_path+line[1])

@@ -16,12 +16,12 @@ sess = tf.InteractiveSession()
 x_shop = tf.placeholder("float", [1, 227, 227, 3])
 train_mode = tf.placeholder(tf.bool)
 
-npy_path = '/ais/gobi4/fashion/retrieval/shop_alex.npy'
+npy_path = '/ais/gobi4/fashion/bvlc_alexnet.npy'
 shop_network = alex.ALEXNET(alex_npy_path=npy_path, trainable=False)
 
 shop_network.build(rgb=x_shop, flag="shop", train_mode=train_mode)
 
-y_shop = shop_network.relu7
+y_shop = shop_network.relu6
 
 sess.run(tf.initialize_all_variables())
 shop_path = '/ais/gobi4/fashion/retrieval/test_gallery.json'
