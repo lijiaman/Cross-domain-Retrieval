@@ -73,15 +73,10 @@ for epoch in range(n_epoch):
     iter_per_epoch = 2
     for iter in xrange(iter_per_epoch):
     	street_batch, shop_batch, y_street_batch, y_shop_batch, if_pair_batch = input.load_share_train(batch_size)
-        #zero_batch = np.zeros_like(if_pair_batch)
-        #print("zero_batch.shape:")
-        #print zero_batch.shape
         feed_dict = {x_street: street_batch, x_shop: shop_batch, if_pair: if_pair_batch, train_mode:True}
-        #conv1, conv2, conv3, conv4, conv5, fc8, fc7, fc6, pool3 = sess.run([network.conv1, network.conv2, network.conv3, network.conv4, network.conv5, network.fc8, network.fc7, network.fc6, network.pool3], feed_dict=feed_dict)
         pred_out,_, err, d_s, lr, train_summary = sess.run([pred, train_op, triplet_loss, dist_square, learning_rate, merged], feed_dict=feed_dict)
         iter_show += 1
         train_writer.add_summary(train_summary, iter_show)
-        #network.save_npy(sess=sess, npy_path="test_save.npy")
 
         if iter % 10 == 0:
             print_time = time.strftime(ISOTIMEFORMAT, time.localtime())

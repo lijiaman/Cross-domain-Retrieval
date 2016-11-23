@@ -1,6 +1,6 @@
 import os
 import tensorflow as tf
-import tensorlayer as tl
+
 import numpy as np
 import time
 import inspect
@@ -19,79 +19,77 @@ class ALEXNET:
         else:
             self.data_dict = None
 
-        #if flag:
-            #self.label_name = flag
-
         self.var_dict = {}
         self.trainable = trainable
 
-    def build(self, rgb, flag=None, reuse=None, train_mode=None):
+    def build(self, rgb, train_mode=None):
         """
         load variable from npy to build the NIN
         :param rgb: rgb image [batch, height, width, 3] values scaled [0, 1]
         :param train_mode: a bool tensor, usually a placeholder: if True, dropout will be turned on
         """
-        with tf.variable_scope(flag, reuse=reuse) as scope:
-            if reuse:
-                scope.reuse_variables()
 
-         
-	    rgb_scaled = rgb * 255.0
+        rgb_scaled = rgb * 255.0
 
-	    # Convert RGB to BGR
-	    red, green, blue = tf.split(3, 3, rgb_scaled)
-	    assert red.get_shape().as_list()[1:] == [227, 227, 1]
-	    assert green.get_shape().as_list()[1:] == [227, 227, 1]
-	    assert blue.get_shape().as_list()[1:] == [227, 227, 1]
-	    bgr = tf.concat(3, [
-		blue - ALEX_MEAN[0],
-		green - ALEX_MEAN[1],
-		red - ALEX_MEAN[2],
-	    ])
+        # Convert RGB to BGR
+        red, green, blue = tf.split(3, 3, rgb_scaled)
+        assert red.get_shape().as_list()[1:] == [227, 227, 1]
+        assert green.get_shape().as_list()[1:] == [227, 227, 1]
+        assert blue.get_shape().as_list()[1:] == [227, 227, 1]
+        bgr = tf.concat(3, [
+            blue - ALEX_MEAN[0],
+            green - ALEX_MEAN[1],
+            red - ALEX_MEAN[2],
+        ])
 
-	    assert bgr.get_shape().as_list()[1:] == [227, 227, 3]
+        rgb = tf.concat(3, [
+            red - ALEX_MEAN[0],
+            green - ALEX_MEAN[1],
+            blue - ALEX_MEAN[2],
+        ])
+        assert bgr.get_shape().as_list()[1:] == [227, 227, 3]
 
-	    self.conv1 = self.conv_layer(bgr, 3, 96, 11, 4, "conv1",padding="VALID")
-	    self.lrn1 = tf.nn.lrn(self.conv1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm1')
-	    #print("lrn1.shape:{0}".format(self.lrn1.get_shape()))
-	    self.pool1 = self.max_pool(self.lrn1, 3, 2, "pool1")
-	    #print "pool1.shape:"
-	    #print self.pool1.get_shape()
-	    self.conv2 = self.conv_group_layer(self.pool1, 96, 256, 5, 1, "conv2", 2)
-	    #print "conv2.shape:"
-	    #print self.conv2.get_shape()
-	    #self.conv2 = self.conv_layer(self.pool1, 96, 256, 5, 1, "conv2")
-	    self.lrn2 = tf.nn.lrn(self.conv2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm2')
-	    self.pool2 = self.max_pool(self.lrn2, 3, 2, "pool2")
-	    #print "pool2.shape:"
-	    #print self.pool2.get_shape()
-	    self.conv3 = self.conv_layer(self.pool2, 256, 384, 3, 1, "conv3")
-	    #print "conv3:"
-	    #print self.conv3.get_shape()
-	    self.conv4 = self.conv_group_layer(self.conv3, 384, 384, 3, 1, "conv4", 2)
-	    #self.conv4 = self.conv_layer(self.conv3, 384, 384, 3, 1, "conv4", [1,1])
-	    #self.conv5 = self.conv_layer(self.conv4, 384, 256, 3, 1, "conv5")
-	    self.conv5 = self.conv_group_layer(self.conv4, 384, 256, 3, 1, "conv5", 2)
-	    self.pool3 = self.max_pool(self.conv5, 3, 2, "pool3")
-	    #print "pool3.shape:"
-	    #print self.pool3.get_shape()
-	    self.fc6 = self.fc_layer(self.pool3, 9216, 4096, "fc6")
-	    self.relu6 = tf.nn.relu(self.fc6)
-#	    if train_mode is not None:
-#		self.relu6 = tf.cond(train_mode, lambda: tf.nn.dropout(self.relu6, 0.5), lambda: self.relu6)
-#	    elif self.trainable:
-#		self.relu6 = tf.nn.dropout(self.relu6, 0.5)
-#	    
-#	    self.fc7 = self.fc_layer(self.fc6, 4096, 4096, "fc7")
-#	    self.relu7 = tf.nn.relu(self.fc7)
-#	    if train_mode is not None:
-#		self.relu7 = tf.cond(train_mode, lambda: tf.nn.dropout(self.relu7, 0.5), lambda: self.relu7)
-#	    elif self.trainable:
-#		self.relu7 = tf.nn.dropout(self.relu7, 0.5)
-#
-#	    self.fc8 = self.fc_layer(self.relu7, 4096, 50, "fc8_final")
-#
-            self.data_dict = None
+        self.conv1 = self.conv_layer(bgr, 3, 96, 11, 4, "conv1",padding="VALID")
+        self.lrn1 = tf.nn.lrn(self.conv1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm1')
+        #print("lrn1.shape:{0}".format(self.lrn1.get_shape()))
+        self.pool1 = self.max_pool(self.lrn1, 3, 2, "pool1")
+        #print "pool1.shape:"
+        #print self.pool1.get_shape()
+        self.conv2 = self.conv_group_layer(self.pool1, 96, 256, 5, 1, "conv2", 2)
+        #print "conv2.shape:"
+        #print self.conv2.get_shape()
+        #self.conv2 = self.conv_layer(self.pool1, 96, 256, 5, 1, "conv2")
+        self.lrn2 = tf.nn.lrn(self.conv2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm2')
+        self.pool2 = self.max_pool(self.lrn2, 3, 2, "pool2")
+        #print "pool2.shape:"
+        #print self.pool2.get_shape()
+        self.conv3 = self.conv_layer(self.pool2, 256, 384, 3, 1, "conv3")
+        #print "conv3:"
+        #print self.conv3.get_shape()
+        self.conv4 = self.conv_group_layer(self.conv3, 384, 384, 3, 1, "conv4", 2)
+        #self.conv4 = self.conv_layer(self.conv3, 384, 384, 3, 1, "conv4", [1,1])
+        #self.conv5 = self.conv_layer(self.conv4, 384, 256, 3, 1, "conv5")
+        self.conv5 = self.conv_group_layer(self.conv4, 384, 256, 3, 1, "conv5", 2)
+        self.pool3 = self.max_pool(self.conv5, 3, 2, "pool3")
+        #print "pool3.shape:"
+        #print self.pool3.get_shape()
+        self.fc6 = self.fc_layer(self.pool3, 9216, 4096, "fc6")
+        self.relu6 = tf.nn.relu(self.fc6)
+        if train_mode is not None:
+            self.relu6 = tf.cond(train_mode, lambda: tf.nn.dropout(self.relu6, 0.5), lambda: self.relu6)
+        elif self.trainable:
+            self.relu6 = tf.nn.dropout(self.relu6, 0.5)
+        
+        self.fc7 = self.fc_layer(self.fc6, 4096, 4096, "fc7")
+        self.relu7 = tf.nn.relu(self.fc7)
+        if train_mode is not None:
+            self.relu7 = tf.cond(train_mode, lambda: tf.nn.dropout(self.relu7, 0.5), lambda: self.relu7)
+        elif self.trainable:
+            self.relu7 = tf.nn.dropout(self.relu7, 0.5)
+
+        self.fc8 = self.fc_layer(self.relu7, 4096, 50, "fc8_final")
+
+        self.data_dict = None
 
     def avg_pool(self, bottom, filter_size, stride, name):
         return tf.nn.avg_pool(bottom, ksize=[1, filter_size, filter_size, 1], strides=[1, stride, stride, 1], padding='VALID', name=name)
@@ -187,7 +185,7 @@ class ALEXNET:
 
         return var
 
-    def save_npy(self, sess, npy_path=None):
+    def save_npy(self, sess, npy_path="/ais/gobi4/fashion/data/bbox_native_alex.npy"):
         assert isinstance(sess, tf.InteractiveSession)
 
         data_dict = {}
