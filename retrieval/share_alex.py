@@ -33,7 +33,7 @@ y_shop = shop_network.relu6
 dist_square_vec = tf.reduce_sum(tf.square(tf.sub(y_street, y_shop)), 1)
 
 zero = tf.constant(0.0, dtype="float", shape=[batch_size,])
-margin = tf.constant(1600, dtype="float", shape=[batch_size,])
+margin = tf.constant(1000, dtype="float", shape=[batch_size,])
 #For pair
 pred_pair = tf.less(dist_square_vec, margin)
 triplet_loss_pair = tf.select(pred_pair, dist_square_vec, margin)

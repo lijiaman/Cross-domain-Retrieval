@@ -11,12 +11,14 @@ import input
 import alex
 import json
 import random
+import bbox_input
+import string
 
 sess = tf.InteractiveSession()
 x_street = tf.placeholder("float", [1, 227, 227, 3])
 train_mode = tf.placeholder(tf.bool)
 
-npy_path = '/ais/gobi4/fashion/retrieval/shop_alex.npy'
+npy_path = '/ais/gobi4/fashion/bvlc_alexnet.npy'
 street_network = alex.ALEXNET(alex_npy_path=npy_path, trainable=False)
 
 street_network.build(rgb=x_street, flag="street", train_mode=train_mode)
@@ -25,15 +27,19 @@ street_network.build(rgb=x_street, flag="street", train_mode=train_mode)
 y_street = street_network.relu6
 
 sess.run(tf.initialize_all_variables())
-street_path = '/ais/gobi4/fashion/retrieval/total_street_features.json'
+street_path = '/ais/gobi4/fashion/retrieval/total_bbox_street_features.json'
 img_path = '/ais/gobi4/fashion/data/Cross-domain-Retrieval/'
 with open(street_path, 'a') as jsonfile:
-    with open('/ais/gobi4/fashion/data/Cross-domain-Retrieval/list_test_triplet_category.txt', 'rb') as f:
+    with open('/ais/gobi4/fashion/data/Cross-domain-Retrieval/bbox_test_triplet_category.txt', 'rb') as f:
         #data = random.sample(f.readlines(), 200)
         data = f.readlines()
         for line in data:
             line = line.split()
-            x = input.load_image(img_path+line[1])
+            x1 = string.atoi(line[3])
+            y1 = string.atoi(line[4])
+            x2 = string.atoi(line[5])
+            y2 = string.atoi(line[6])
+            x = bbox_input.load_bbox_image(img_path+line[1], x1, y1, x2, y2)
             x = x.reshape([1, 227, 227, 3])
             feed_dict = {x_street: x, train_mode: False}
             y = sess.run([y_street], feed_dict=feed_dict)
