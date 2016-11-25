@@ -1,12 +1,14 @@
 import numpy as np
 import json
 import time
-street_file = '/ais/gobi4/fashion/retrieval/part_street_features.json'
-shop_file = '/ais/gobi4/fashion/retrieval/test_gallery.json'
-k = 20
+#street_file = '/ais/gobi4/fashion/retrieval/part_street_features.json'
+#shop_file = '/ais/gobi4/fashion/retrieval/test_gallery.json'
+street_file = '/ais/gobi4/fashion/retrieval/toy64_darn_street_features.json'
+shop_file = '/ais/gobi4/fashion/retrieval/toy64_darn_test_gallery.json'
+k = 1
 acc = 0
-shop_total = 47384
-street_total = 200
+#shop_total = 47384
+street_total = 64
 with open(street_file, 'rb') as street:
     start_time = time.time()
     street_data = street.readlines()
@@ -22,7 +24,11 @@ with open(street_file, 'rb') as street:
                 distance.append( np.sqrt(np.sum((cal_shop-cal_street)**2)))
         shop.close()
         index = np.argsort(distance)
+        print("index:")
+        print index
         topk_index = index[:k]
+        print("topk index:")
+        print topk_index
         cnt = 0
         with open(shop_file, 'rb') as shop:
             shop_data = shop.readlines()
@@ -33,6 +39,7 @@ with open(street_file, 'rb') as street:
                     cnt = 1
         shop.close()
         
+        print("hit = {0}".format(acc))
         acc += float(cnt)
 
 

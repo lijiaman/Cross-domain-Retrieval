@@ -41,7 +41,7 @@ dist_nopair = tf.reduce_mean(dist_nopair_vec)
 
 
 zero = tf.constant(0.0, dtype="float", shape=[batch_size,])
-margin = tf.constant(10, dtype="float", shape=[batch_size,])
+margin = tf.constant(0.3, dtype="float", shape=[batch_size,])
 dist_vec = tf.add(tf.sub(dist_pair_vec, dist_nopair_vec), margin)
 pred = tf.less(dist_vec, zero)
 triplet_loss_vec = tf.select(pred, zero, dist_vec)

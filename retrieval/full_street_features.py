@@ -36,11 +36,7 @@ with open(street_path, 'a') as jsonfile:
         data = f.readlines()
         for line in data:
             line = line.split()
-           # x1 = string.atoi(line[3])
-           # y1 = string.atoi(line[4])
-           # x2 = string.atoi(line[5])
-           # y2 = string.atoi(line[6])
-            x = bbox_input.load_bbox_image(img_path+line[1], x1, y1, x2, y2)
+            x = input.load_image(img_path+line[1])
             x = x.reshape([1, 227, 227, 3])
             feed_dict = {x_street: x, train_mode: False}
             y = sess.run([y_street], feed_dict=feed_dict)

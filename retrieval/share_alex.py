@@ -1,5 +1,4 @@
 import tensorflow as tf
-import tensorlayer as tl
 import os
 import numpy as np
 import time
@@ -15,13 +14,16 @@ import alex
 sess = tf.InteractiveSession()
 #batch_size = 64
 batch_size = 32
+#batch_size = 1
 x_street = tf.placeholder("float", [batch_size, 227, 227, 3])
 x_shop = tf.placeholder("float", [batch_size, 227, 227, 3])
 if_pair = tf.placeholder("float", [batch_size,])
 train_mode = tf.placeholder(tf.bool)
 
 npy_path = '/ais/gobi4/fashion/bvlc_alexnet.npy'
+#street_network = alex.ALEXNET(alex_npy_path=None, trainable=True)
 street_network = alex.ALEXNET(alex_npy_path=npy_path, trainable=True)
+#shop_network = alex.ALEXNET(alex_npy_path=None, trainable=True)
 shop_network = alex.ALEXNET(alex_npy_path=npy_path, trainable=True)
 
 street_network.build(rgb=x_street, flag="share", train_mode=train_mode)
@@ -33,7 +35,7 @@ y_shop = shop_network.relu6
 dist_square_vec = tf.reduce_sum(tf.square(tf.sub(y_street, y_shop)), 1)
 
 zero = tf.constant(0.0, dtype="float", shape=[batch_size,])
-margin = tf.constant(1000, dtype="float", shape=[batch_size,])
+margin = tf.constant(0.6, dtype="float", shape=[batch_size,])
 #For pair
 pred_pair = tf.less(dist_square_vec, margin)
 triplet_loss_pair = tf.select(pred_pair, dist_square_vec, margin)
@@ -55,8 +57,8 @@ val_writer = tf.train.SummaryWriter(log_dir+'/val')
 # train
 n_epoch = 500
 global_step = tf.Variable(0)
-starter_learning_rate = 0.000001
-learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 30, 0.96, staircase=True)
+starter_learning_rate = 0.0000001
+learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 15, 0.96, staircase=True)
 print_freq = 1
 
 train_op = tf.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(triplet_loss, global_step=global_step)
@@ -78,7 +80,7 @@ for epoch in range(n_epoch):
         iter_show += 1
         train_writer.add_summary(train_summary, iter_show)
 
-        if iter % 10 == 0:
+        if iter % 1 == 0:
             print_time = time.strftime(ISOTIMEFORMAT, time.localtime())
             print("{0} Epoch: {1}, Train iteration: {2}, lr: {3}".format(print_time, epoch+1, iter+1, lr))
             print("   Train Loss: %f" % err)
@@ -104,7 +106,7 @@ for epoch in range(n_epoch):
     loss_val_f = val_triplet_loss / val_iters
     d_square_val_f = val_dsquare / val_iters
     print("   val triplet loss: %f" % loss_val_f)
-    print("   dist_pair: %f" % d_square_val_f)
+    print("   dist_share: %f" % d_square_val_f)
     
     summary = tf.Summary()
     summary.value.add(tag="Loss",simple_value=loss_val_f)

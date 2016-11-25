@@ -17,7 +17,8 @@ sess = tf.InteractiveSession()
 x_shop = tf.placeholder("float", [1, 227, 227, 3])
 train_mode = tf.placeholder(tf.bool)
 
-npy_path = '/ais/gobi4/fashion/bvlc_alexnet.npy'
+npy_path = '/ais/gobi4/fashion/retrieval/shop_alex.npy'
+#npy_path = '/ais/gobi4/fashion/bvlc_alexnet.npy'
 shop_network = alex.ALEXNET(alex_npy_path=npy_path, trainable=False)
 
 shop_network.build(rgb=x_shop, flag="shop", train_mode=train_mode)
@@ -26,19 +27,15 @@ y_shop = shop_network.relu6
 
 sess.run(tf.initialize_all_variables())
 #shop_path = '/ais/gobi4/fashion/retrieval/test_gallery.json'
-shop_path = '/ais/gobi4/fashion/retrieval/bbox_test_gallery.json'
+shop_path = '/ais/gobi4/fashion/retrieval/toy64_darn_test_gallery.json'
 img_path = '/ais/gobi4/fashion/data/Cross-domain-Retrieval/'
 with open(shop_path, 'a') as jsonfile:
-    with open('/ais/gobi4/fashion/data/Cross-domain-Retrieval/bbox_test_triplet_category.txt', 'rb') as f:
+    with open('/ais/gobi4/fashion/data/Cross-domain-Retrieval/toy64_noshare_train.txt', 'rb') as f:
         data = f.readlines()
         for line in data:
             line = line.split()
-            x1 = string.atoi(line[9], 10)
-            y1 = string.atoi(line[10], 10)
-            x2 = string.atoi(line[11], 10)
-            y2 = string.atoi(line[12], 10)
             
-            x = bbox_input.load_bbox_image(img_path+line[7],x1,y1,x2,y2)
+            x = input.load_image(img_path+line[3])
             x = x.reshape([1, 227, 227, 3])
             feed_dict = {x_shop: x, train_mode: False}
             y = sess.run([y_shop], feed_dict=feed_dict)

@@ -52,7 +52,8 @@ class ALEXNET:
 	    assert bgr.get_shape().as_list()[1:] == [227, 227, 3]
 
 	    self.conv1 = self.conv_layer(bgr, 3, 96, 11, 4, "conv1",padding="VALID")
-	    self.lrn1 = tf.nn.lrn(self.conv1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm1')
+	    print
+            self.lrn1 = tf.nn.lrn(self.conv1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm1')
 	    #print("lrn1.shape:{0}".format(self.lrn1.get_shape()))
 	    self.pool1 = self.max_pool(self.lrn1, 3, 2, "pool1")
 	    #print "pool1.shape:"
@@ -77,6 +78,9 @@ class ALEXNET:
 	    #print self.pool3.get_shape()
 	    self.fc6 = self.fc_layer(self.pool3, 9216, 4096, "fc6")
 	    self.relu6 = tf.nn.relu(self.fc6)
+            self.relu6 = tf.nn.l2_normalize(self.relu6, 1)
+            #print("relu6.shape:")
+            print self.relu6.get_shape()
 #	    if train_mode is not None:
 #		self.relu6 = tf.cond(train_mode, lambda: tf.nn.dropout(self.relu6, 0.5), lambda: self.relu6)
 #	    elif self.trainable:
@@ -148,26 +152,48 @@ class ALEXNET:
             return fc
 
     def get_conv_var(self, filter_size, in_channels, out_channels, name):
-        initial_value = tf.truncated_normal([filter_size, filter_size, in_channels, out_channels], 0.0, 0.001)
-        filters = self.get_var(initial_value, name, 0, name + "_filters")
+        #initial_value = tf.truncated_normal([filter_size, filter_size, in_channels, out_channels], 0.0, 0.001)
+        #filters = self.get_var(initial_value, name, 0, name + "_filters")
 
-        initial_value = tf.truncated_normal([out_channels], .0, .001)
-        biases = self.get_var(initial_value, name, 1, name + "_biases")
+        #initial_value = tf.truncated_normal([out_channels], .0, .001)
+        #biases = self.get_var(initial_value, name, 1, name + "_biases")
+        #print("name:")
+        #print(name)
+        if self.data_dict is not None and name in self.data_dict:
+            init_w = tf.constant(self.data_dict[name][0])
+            init_b = tf.constant(self.data_dict[name][1])
+            filters = tf.get_variable(name+"_filters", initializer=init_w)
+            biases = tf.get_variable(name+"_biases", initializer=init_b)
+            #print("load success")
+        else:
+            init_w = tf.truncated_normal_initializer(0.0, 0.001)
+            init_b = tf.truncated_normal_initializer(0.0, 0.001)
+            filters = tf.get_variable(name+"_filters", [filter_size, filter_size, in_channels, out_channels], initializer=init_w)
+            biases = tf.get_variable(name+"_biases", [out_channels], initializer=init_b)
 
         return filters, biases
 
     def get_fc_var(self, in_size, out_size, name):
-        initial_value = tf.truncated_normal([in_size, out_size], 0.0, 0.001)
-        weights = self.get_var(initial_value, name, 0, name + "_weights")
+       # initial_value = tf.truncated_normal([in_size, out_size], 0.0, 0.001)
+       # weights = self.get_var(initial_value, name, 0, name + "_weights")
 
-        initial_value = tf.truncated_normal([out_size], .0, .001)
-        biases = self.get_var(initial_value, name, 1, name + "_biases")
-
+       # initial_value = tf.truncated_normal([out_size], .0, .001)
+       # biases = self.get_var(initial_value, name, 1, name + "_biases")
+        if self.data_dict is not None and name in self.data_dict:
+            init_w = tf.constant(self.data_dict[name][0])
+            init_b = tf.constant(self.data_dict[name][1])
+            weights = tf.get_variable(name+"_weights", initializer=init_w)
+            biases = tf.get_variable(name+"_biases", initializer=init_b)
+        else:
+            init_w = tf.truncated_normal_initializer(0.0, 0.001)
+            init_b = tf.truncated_normal_initializer(0.0, 0.001)
+            weights = tf.get_variable(name+"_weights", [in_size, out_size], initializer=init_w)
+            biases = tf.get_variable(name+"_biases", [out_size], initializer=init_b)
         return weights, biases
 
     def get_var(self, initial_value, name, idx, var_name):
-        #print("name:")
-        #print name
+        print("var name:")
+        print var_name
         if self.data_dict is not None and name in self.data_dict:
             value = self.data_dict[name][idx]
         else:
@@ -175,6 +201,7 @@ class ALEXNET:
 
         if self.trainable:
             var = tf.Variable(value, name=var_name)
+            #var = tf.get_variable(value)
         else:
             var = tf.constant(value, dtype=tf.float32, name=var_name)
 

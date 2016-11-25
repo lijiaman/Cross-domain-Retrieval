@@ -34,7 +34,7 @@ def load_batchsize_images(batch_size=32):
         y_street_batch = []
         y_shop_batch = []
         y_nopair_batch = []
-	with open(tmp+'toy64_noshare_train.txt') as f:
+	with open(tmp+'toy64_triplet_train.txt') as f:
 	#with open(tmp+'list_train_triplet_category.txt') as f:
 		lines = random.sample(f.readlines(),batch_size)
     	#print lines
@@ -72,7 +72,7 @@ def load_val_images(batch_size=32):
         y_street_batch = []
         y_shop_batch = []
         y_nopair_batch = []
-	with open(tmp+'toy64_noshare_val.txt', 'rb') as f:
+	with open(tmp+'toy64_triplet_val.txt', 'rb') as f:
 	#with open(tmp+'list_val_triplet_category.txt', 'rb') as f:
 		lines = random.sample(f.readlines(),batch_size)
     	#print lines
@@ -110,7 +110,7 @@ def load_test_images(test_batch_size=32):
         y_street_batch = []
         y_shop_batch = []
         y_nopair_batch = []
-	with open(tmp+'toy64_noshare_test.txt', 'rb') as f:
+	with open(tmp+'toy64_triplet_test.txt', 'rb') as f:
         #with open(tmp+'list_test_triplet_category.txt') as f:
 		lines = random.sample(f.readlines(),test_batch_size)
     	#print lines
