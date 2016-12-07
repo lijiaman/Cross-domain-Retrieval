@@ -1,6 +1,7 @@
 import numpy as np 
 import string
 import random
+import linecache
 import skimage
 import skimage.io
 import skimage.transform
@@ -20,12 +21,11 @@ def load_image(path):
     xx = int((img.shape[1] - short_edge) / 2)
     crop_img = img[yy: yy + short_edge, xx: xx + short_edge]
     resized_img = skimage.transform.resize(crop_img, (227, 227))
-#    print resized_img
     return resized_img
 
 
 
-def load_batchsize_images(batch_size=32):
+def load_batchsize_images(batch_size=32,mode='train'):
 	street_path_batch = []
         shop_path_batch = []
         nopair_path_batch = []
@@ -35,27 +35,45 @@ def load_batchsize_images(batch_size=32):
         y_street_batch = []
         y_shop_batch = []
         y_nopair_batch = []
-	with open(tmp+'toy4_noshare_train_triplet_all.txt') as f:
+        #train_file = 'toy4_noshare_train_category.txt'
+        if mode == 'train':
+            train_file = 'train_pairs_category.txt'
+            num_lines = 98163
+        elif mode == 'val':
+            train_file = 'val_pairs_category.txt'
+            num_lines = 48571
+        elif mode == 'test':
+            train_file = 'test_pairs_category.txt'
+            num_lines = 47384
+        else:
+            print("mode is not valid!")
+
+	with open(tmp+train_file) as f:
 	#with open(tmp+'list_train_triplet_category.txt') as f:
 		lines = random.sample(f.readlines(),batch_size)
     	#print lines
     	        for line in lines:
     		        line = line.split()
-                        if os.path.isfile(img_path+line[1]) and os.path.isfile(img_path+line[3]) and os.path.isfile(img_path+line[5]):
+                        nopair_index = np.random.choice(num_lines, 1)
+                        third = linecache.getline(tmp+train_file, nopair_index+1)
+                        not_pair = third.split()
+
+                        while not_pair[0] == line[0]:
+                            nopair_index = np.random.choice(num_lines, 1)
+                            third = linecache.getline(tmp+train_file, nopair_index+1)
+                            not_pair = third.split()
+
+                        if os.path.isfile(img_path+line[1]) and os.path.isfile(img_path+line[3]) and os.path.isfile(img_path+not_pair[3]):
     		            street_path_batch.append(img_path+line[1])
                             y_street_batch.append(string.atoi(line[2],10)-1)
                             shop_path_batch.append(img_path+line[3])
                             y_shop_batch.append(string.atoi(line[4],10)-1)
-                            nopair_path_batch.append(img_path+line[5])
-                            y_nopair_batch.append(string.atoi(line[6],10)-1)
+                            #print("not_pair:{0}".format(not_pair[3]))
+                            nopair_path_batch.append(img_path+not_pair[3])
+                            y_nopair_batch.append(string.atoi(not_pair[4],10)-1)
     	
 	f.close()
 	for street_path in street_path_batch:
-                #street_tmp = load_image(street_path)
-                #print street_tmp.shape
-                #print "img path:"
-                #print street_path
-                #assert(street_tmp.shape == [227,227,3])
 		street_batch.append(load_image(street_path))
         for shop_path in shop_path_batch:
                 shop_batch.append(load_image(shop_path))
@@ -63,83 +81,8 @@ def load_batchsize_images(batch_size=32):
                 nopair_batch.append(load_image(nopair_path))
 	return np.asarray(street_batch), np.asarray(shop_batch), np.asarray(nopair_batch), np.asarray(y_street_batch), np.asarray(y_shop_batch), np.asarray(y_nopair_batch)
 
-def load_val_images(batch_size=32):
-	street_path_batch = []
-        shop_path_batch = []
-        nopair_path_batch = []
-	street_batch = []
-	shop_batch = []
-        nopair_batch = []
-        y_street_batch = []
-        y_shop_batch = []
-        y_nopair_batch = []
-	with open(tmp+'toy4_noshare_train_triplet_all.txt') as f:
-	#with open(tmp+'toy64_triplet_val_category.txt', 'rb') as f:
-	#with open(tmp+'list_val_triplet_category.txt', 'rb') as f:
-		lines = random.sample(f.readlines(),batch_size)
-    	#print lines
-    	        for line in lines:
-    		        line = line.split()
-                        if os.path.isfile(img_path+line[1]) and os.path.isfile(img_path+line[3]) and os.path.isfile(img_path+line[5]):
-    		            street_path_batch.append(img_path+line[1])
-                            y_street_batch.append(string.atoi(line[2],10)-1)
-                            shop_path_batch.append(img_path+line[3])
-                            y_shop_batch.append(string.atoi(line[4],10)-1)
-                            nopair_path_batch.append(img_path+line[5])
-                            y_nopair_batch.append(string.atoi(line[6],10)-1)
-    	
-	f.close()
-	for street_path in street_path_batch:
-                #street_tmp = load_image(street_path)
-                #print street_tmp.shape
-                #print "img path:"
-                #print street_path
-                #assert(street_tmp.shape == [227,227,3])
-		street_batch.append(load_image(street_path))
-        for shop_path in shop_path_batch:
-                shop_batch.append(load_image(shop_path))
-        for nopair_path in nopair_path_batch:
-                nopair_batch.append(load_image(nopair_path))
-	return np.asarray(street_batch), np.asarray(shop_batch), np.asarray(nopair_batch), np.asarray(y_street_batch), np.asarray(y_shop_batch), np.asarray(y_nopair_batch)
 
-def load_test_images(test_batch_size=32):
-	street_path_batch = []
-        shop_path_batch = []
-        nopair_path_batch = []
-	street_batch = []
-	shop_batch = []
-        nopair_batch = []
-        y_street_batch = []
-        y_shop_batch = []
-        y_nopair_batch = []
-	with open(tmp+'toy4_noshare_train_triplet_all.txt') as f:
-	#with open(tmp+'toy64_triplet_test_category.txt', 'rb') as f:
-        #with open(tmp+'list_test_triplet_category.txt') as f:
-		lines = random.sample(f.readlines(),test_batch_size)
-    	#print lines
-    	        for line in lines:
-    		        line = line.split()
-                        if os.path.isfile(img_path+line[1]) and os.path.isfile(img_path+line[3]) and os.path.isfile(img_path+line[5]):
-    		            street_path_batch.append(img_path+line[1])
-                            y_street_batch.append(string.atoi(line[2],10)-1)
-                            shop_path_batch.append(img_path+line[3])
-                            y_shop_batch.append(string.atoi(line[4],10)-1)
-                            nopair_path_batch.append(img_path+line[5])
-                            y_nopair_batch.append(string.atoi(line[6],10)-1)
-    	
-	f.close()
-	for street_path in street_path_batch:
-                #street_tmp = load_image(street_path)
-                #print street_tmp.shape
-                #print "img path:"
-                #print street_path
-                #assert(street_tmp.shape == [227,227,3])
-		street_batch.append(load_image(street_path))
-        for shop_path in shop_path_batch:
-                shop_batch.append(load_image(shop_path))
-        for nopair_path in nopair_path_batch:
-                nopair_batch.append(load_image(nopair_path))
-	return np.asarray(street_batch), np.asarray(shop_batch), np.asarray(nopair_batch), np.asarray(y_street_batch), np.asarray(y_shop_batch), np.asarray(y_nopair_batch)
+
 
 def load_share_train(batch_size=32):
 	street_path_batch = []
@@ -150,7 +93,7 @@ def load_share_train(batch_size=32):
         y_shop_batch = []
         if_pair_batch = []
 	#with open(tmp+'split_triplet_train.txt') as f:
-	with open(tmp+'toy4_share_all.txt') as f:
+	with open(tmp+'toy64_share_train.txt') as f:
 		lines = random.sample(f.readlines(),batch_size)
     	#print lines
     	        for line in lines:

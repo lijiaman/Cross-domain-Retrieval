@@ -1,6 +1,5 @@
 import os
 import tensorflow as tf
-import tensorlayer as tl
 import numpy as np
 import time
 import inspect
@@ -16,6 +15,8 @@ class ALEXNET:
     def __init__(self, alex_npy_path=None, trainable=True):
         if alex_npy_path is not None:
             self.data_dict = np.load(alex_npy_path, encoding='latin1').item()
+            #print("data dict")
+            #print self.data_dict
         else:
             self.data_dict = None
 
@@ -52,7 +53,6 @@ class ALEXNET:
 	    assert bgr.get_shape().as_list()[1:] == [227, 227, 3]
 
 	    self.conv1 = self.conv_layer(bgr, 3, 96, 11, 4, "conv1",padding="VALID")
-	    print
             self.lrn1 = tf.nn.lrn(self.conv1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm1')
 	    #print("lrn1.shape:{0}".format(self.lrn1.get_shape()))
 	    self.pool1 = self.max_pool(self.lrn1, 3, 2, "pool1")
@@ -77,16 +77,17 @@ class ALEXNET:
 	    #print "pool3.shape:"
 	    #print self.pool3.get_shape()
 	    self.fc6 = self.fc_layer(self.pool3, 9216, 4096, "fc6")
-	    self.relu6 = tf.nn.relu(self.fc6)
-            self.relu6 = tf.nn.l2_normalize(self.relu6, 1)
+	    #self.relu6 = tf.nn.relu(self.fc6)
+            self.relu6 = tf.nn.l2_normalize(self.fc6, 1)
             #print("relu6.shape:")
-            print self.relu6.get_shape()
-#	    if train_mode is not None:
-#		self.relu6 = tf.cond(train_mode, lambda: tf.nn.dropout(self.relu6, 0.5), lambda: self.relu6)
-#	    elif self.trainable:
-#		self.relu6 = tf.nn.dropout(self.relu6, 0.5)
-#	    
-#	    self.fc7 = self.fc_layer(self.fc6, 4096, 4096, "fc7")
+#            print self.relu6.get_shape()
+	    #if train_mode is not None:
+	    #    self.relu6 = tf.cond(train_mode, lambda: tf.nn.dropout(self.relu6, 0.5), lambda: self.relu6)
+	    #elif self.trainable:
+	    #    self.relu6 = tf.nn.dropout(self.relu6, 0.5)
+	    #
+	    #self.fc7 = self.fc_layer(self.fc6, 4096, 4096, "fc7")
+            #self.relu7 = tf.nn.l2_normalize(self.fc7, 1)
 #	    self.relu7 = tf.nn.relu(self.fc7)
 #	    if train_mode is not None:
 #		self.relu7 = tf.cond(train_mode, lambda: tf.nn.dropout(self.relu7, 0.5), lambda: self.relu7)
@@ -94,7 +95,7 @@ class ALEXNET:
 #		self.relu7 = tf.nn.dropout(self.relu7, 0.5)
 #
 #	    self.fc8 = self.fc_layer(self.relu7, 4096, 50, "fc8_final")
-#
+
             self.data_dict = None
 
     def avg_pool(self, bottom, filter_size, stride, name):
@@ -162,14 +163,20 @@ class ALEXNET:
         if self.data_dict is not None and name in self.data_dict:
             init_w = tf.constant(self.data_dict[name][0])
             init_b = tf.constant(self.data_dict[name][1])
+            print self.data_dict[name][0]
             filters = tf.get_variable(name+"_filters", initializer=init_w)
             biases = tf.get_variable(name+"_biases", initializer=init_b)
-            #print("load success")
+            self.var_dict[(name, 0)] = filters
+            self.var_dict[(name, 1)] = biases
+            print("load success")
         else:
+            print("Lose model!")
             init_w = tf.truncated_normal_initializer(0.0, 0.001)
             init_b = tf.truncated_normal_initializer(0.0, 0.001)
             filters = tf.get_variable(name+"_filters", [filter_size, filter_size, in_channels, out_channels], initializer=init_w)
             biases = tf.get_variable(name+"_biases", [out_channels], initializer=init_b)
+            self.var_dict[(name, 0)] = filters
+            self.var_dict[(name, 1)] = biases
 
         return filters, biases
 
@@ -184,11 +191,15 @@ class ALEXNET:
             init_b = tf.constant(self.data_dict[name][1])
             weights = tf.get_variable(name+"_weights", initializer=init_w)
             biases = tf.get_variable(name+"_biases", initializer=init_b)
+            self.var_dict[(name, 0)] = weights
+            self.var_dict[(name, 1)] = biases
         else:
             init_w = tf.truncated_normal_initializer(0.0, 0.001)
             init_b = tf.truncated_normal_initializer(0.0, 0.001)
             weights = tf.get_variable(name+"_weights", [in_size, out_size], initializer=init_w)
             biases = tf.get_variable(name+"_biases", [out_size], initializer=init_b)
+            self.var_dict[(name, 0)] = weights
+            self.var_dict[(name, 1)] = biases
         return weights, biases
 
     def get_var(self, initial_value, name, idx, var_name):

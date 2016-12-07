@@ -6,7 +6,7 @@ import inspect
 import skimage
 import skimage.io
 import skimage.transform
-import input
+import bbox_input
 import alex
 import json
 import bbox_input
@@ -23,19 +23,23 @@ shop_network = alex.ALEXNET(alex_npy_path=npy_path, trainable=False)
 
 shop_network.build(rgb=x_shop, flag='shop', train_mode=train_mode)
 
-y_shop = shop_network.relu7
+y_shop = shop_network.relu6
 
 sess.run(tf.initialize_all_variables())
 #shop_path = '/ais/gobi4/fashion/retrieval/test_gallery.json'
 shop_path = '/ais/gobi4/fashion/retrieval/alex_test_gallery.json'
 img_path = '/ais/gobi4/fashion/data/Cross-domain-Retrieval/'
 with open(shop_path, 'w') as jsonfile:
-    with open('/ais/gobi4/fashion/data/Cross-domain-Retrieval/list_test_pairs.txt', 'rb') as f:
+    with open('/ais/gobi4/fashion/data/Cross-domain-Retrieval/bbox_test_triplet_category.txt', 'rb') as f:
         data = f.readlines()
         for line in data:
             line = line.split()
-            #print("line[3]:{0}".format(line[3]))            
-            x = input.load_image(img_path+line[1])
+            #print("line[3]:{0}".format(line[3]))       
+            x1 = string.atoi(line[9],10)
+            y1 = string.atoi(line[10], 10)
+            x2 = string.atoi(line[11], 10)
+            y2 = string.atoi(line[12], 10)     
+            x = bbox_input.load_image(img_path+line[7], x1, y1, x2, y2)
             #x = input.load_image(img_path+line[2])
             x = x.reshape([1, 227, 227, 3])
             feed_dict = {x_shop: x, train_mode: False}

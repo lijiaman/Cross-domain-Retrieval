@@ -2,21 +2,28 @@ import numpy as np
 import json
 import time
 #street_file = '/ais/gobi4/fashion/retrieval/total_bbox_street_features.json'
-street_file = '/ais/gobi4/fashion/retrieval/toy64_darn_street_features.json'
+#street_file = '/ais/gobi4/fashion/retrieval/darn_street_features.json'
+street_file = '/ais/gobi4/fashion/retrieval/alex_street_features.json'
 #shop_file = '/ais/gobi4/fashion/retrieval/bbox_test_gallery.json'
-shop_file = '/ais/gobi4/fashion/retrieval/toy64_darn_test_gallery.json'
+#shop_file = '/ais/gobi4/fashion/retrieval/darn_test_gallery.json'
+shop_file = '/ais/gobi4/fashion/retrieval/alex_test_gallery.json'
 shop_total = 47384
 street_total = 200
 def build_similarity():
 	street_mat = []
 	shop_mat = []
+        street_num = 10000
+        cnt = 0
 	with open(street_file, 'rb') as street:
 	    start_time = time.time()
 	    street_data = street.readlines()
 	    for street_line in street_data:
+                cnt += 1
 		street_line = json.loads(street_line)
 		cal_street = np.asarray(street_line['street_feature'])
 		street_mat.append(cal_street)
+                if cnt == street_num:
+                    break;
 	    print("Build street mat took:")
 	    print time.time()-start_time
 	    print("street_mat.shape:")
@@ -42,11 +49,11 @@ def build_similarity():
 
 	similarity = np.dot(street_mat, shop_mat.T)
 
-	similar_file = '/ais/gobi4/fashion/retrieval/toy64_darn_similarity.npy'
+	similar_file = '/ais/gobi4/fashion/retrieval/darn_similarity.npy'
 	np.save(similar_file, similarity)
 
-def get_topk_acc(k=20, street_num=64):
-    similar_file = '/ais/gobi4/fashion/retrieval/toy64_darn_similarity.npy'
+def get_topk_acc(k=20, street_num=47384):
+    similar_file = '/ais/gobi4/fashion/retrieval/darn_similarity.npy'
     simi_vec = np.load(similar_file)
     #print("similarity shape:")
     #print simi_vec.shape
@@ -84,4 +91,4 @@ def get_topk_acc(k=20, street_num=64):
     print acc 
 
 build_similarity()
-get_topk_acc(k=40)
+get_topk_acc(k=20)

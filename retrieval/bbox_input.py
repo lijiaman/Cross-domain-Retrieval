@@ -10,7 +10,7 @@ sys.path.append('/ais/gobi4/fashion/data/Cross-domain-Retrieval/')
 img_path = '/ais/gobi4/fashion/data/Cross-domain-Retrieval/'
 tmp = '/ais/gobi4/fashion/data/Cross-domain-Retrieval/'
 
-def load_bbox_image(path, x1, y1, x2, y2):
+def load_image(path, x1, y1, x2, y2):
     img = skimage.io.imread(path)
     img = img / 255.0
     assert (0 <= img).all() and (img <= 1.0).all()
