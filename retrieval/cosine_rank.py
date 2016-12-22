@@ -3,10 +3,10 @@ import json
 import time
 #street_file = '/ais/gobi4/fashion/retrieval/total_bbox_street_features.json'
 #street_file = '/ais/gobi4/fashion/retrieval/darn_street_features.json'
-street_file = '/ais/gobi4/fashion/retrieval/alex_street_features.json'
+street_file = '/ais/gobi4/fashion/retrieval/alex_full_street_features.json'
 #shop_file = '/ais/gobi4/fashion/retrieval/bbox_test_gallery.json'
 #shop_file = '/ais/gobi4/fashion/retrieval/darn_test_gallery.json'
-shop_file = '/ais/gobi4/fashion/retrieval/alex_test_gallery.json'
+shop_file = '/ais/gobi4/fashion/retrieval/alex_full_test_gallery.json'
 shop_total = 47384
 street_total = 200
 def build_similarity():
@@ -49,11 +49,11 @@ def build_similarity():
 
 	similarity = np.dot(street_mat, shop_mat.T)
 
-	similar_file = '/ais/gobi4/fashion/retrieval/darn_similarity.npy'
+	similar_file = '/ais/gobi4/fashion/retrieval/alex_full_similarity.npy'
 	np.save(similar_file, similarity)
 
 def get_topk_acc(k=20, street_num=47384):
-    similar_file = '/ais/gobi4/fashion/retrieval/darn_similarity.npy'
+    similar_file = '/ais/gobi4/fashion/retrieval/alex_full_similarity.npy'
     simi_vec = np.load(similar_file)
     #print("similarity shape:")
     #print simi_vec.shape
@@ -91,4 +91,4 @@ def get_topk_acc(k=20, street_num=47384):
     print acc 
 
 build_similarity()
-get_topk_acc(k=20)
+get_topk_acc(k=20, street_num=10000)

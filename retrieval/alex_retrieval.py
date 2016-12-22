@@ -60,7 +60,7 @@ val_writer = tf.train.SummaryWriter(log_dir+'/val')
 n_epoch = 1000
 global_step = tf.Variable(0)
 starter_learning_rate = 0.0000001
-learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 3000, 0.96, staircase=True)
+learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 1000, 0.96, staircase=True)
 print_freq = 1
 
 train_op = tf.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(triplet_loss, global_step=global_step)

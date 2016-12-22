@@ -76,9 +76,9 @@ class ALEXNET:
 	    self.pool3 = self.max_pool(self.conv5, 3, 2, "pool3")
 	    #print "pool3.shape:"
 	    #print self.pool3.get_shape()
-	    self.fc6 = self.fc_layer(self.pool3, 9216, 4096, "fc6")
+	    #self.fc6 = self.fc_layer(self.pool3, 9216, 4096, "fc6")
 	    #self.relu6 = tf.nn.relu(self.fc6)
-            self.relu6 = tf.nn.l2_normalize(self.fc6, 1)
+            #self.relu6 = tf.nn.l2_normalize(self.fc6, 1)
             #print("relu6.shape:")
 #            print self.relu6.get_shape()
 	    #if train_mode is not None:
@@ -131,7 +131,6 @@ class ALEXNET:
             conv = tf.concat(3, output_groups)
             conv = tf.reshape(tf.nn.bias_add(conv, conv_biases), [-1]+conv.get_shape().as_list()[1:])
             relu = tf.nn.relu(conv)
-            return relu
 
     def cccp_layer(self, bottom, in_channels, out_channels, name):
         with tf.variable_scope(name):

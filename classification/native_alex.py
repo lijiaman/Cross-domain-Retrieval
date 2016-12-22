@@ -122,7 +122,11 @@ class ALEXNET:
             kernel_groups = tf.split(3, group, filt)
             output_groups = [convolve(i ,k) for i, k in zip(input_groups, kernel_groups)]
             conv = tf.concat(3, output_groups)
-            return tf.reshape(tf.nn.bias_add(conv, conv_biases), [-1]+conv.get_shape().as_list()[1:])
+            conv = tf.reshape(tf.nn.bias_add(conv, conv_biases), [-1]+conv.get_shape().as_list()[1:])
+            relu = tf.nn.relu(conv)
+            print name
+            print relu.get_shape()
+            return relu
 
     def cccp_layer(self, bottom, in_channels, out_channels, name):
         with tf.variable_scope(name):
@@ -185,7 +189,7 @@ class ALEXNET:
 
         return var
 
-    def save_npy(self, sess, npy_path="/ais/gobi4/fashion/data/bbox_native_alex.npy"):
+    def save_npy(self, sess, npy_path="/ais/gobi4/fashion/data/alex_full.npy"):
         assert isinstance(sess, tf.InteractiveSession)
 
         data_dict = {}

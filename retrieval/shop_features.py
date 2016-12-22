@@ -18,16 +18,17 @@ train_mode = tf.placeholder(tf.bool)
 
 #npy_path = '/ais/gobi4/fashion/retrieval/share_shop_alex.npy'
 #npy_path = '/ais/gobi4/fashion/retrieval/shop_alex.npy'
-npy_path = '/ais/gobi4/fashion/bvlc_alexnet.npy'
+npy_path = '/ais/gobi4/fashion/data/alex_full.npy'
+#npy_path = '/ais/gobi4/fashion/bvlc_alexnet.npy'
 shop_network = alex.ALEXNET(alex_npy_path=npy_path, trainable=False)
 
 shop_network.build(rgb=x_shop, flag='shop', train_mode=train_mode)
 
-y_shop = shop_network.relu7
+y_shop = shop_network.relu6
 
 sess.run(tf.initialize_all_variables())
 #shop_path = '/ais/gobi4/fashion/retrieval/test_gallery.json'
-shop_path = '/ais/gobi4/fashion/retrieval/alex_test_gallery.json'
+shop_path = '/ais/gobi4/fashion/retrieval/alex_full_test_gallery.json'
 img_path = '/ais/gobi4/fashion/data/Cross-domain-Retrieval/'
 with open(shop_path, 'w') as jsonfile:
     with open('/ais/gobi4/fashion/data/Cross-domain-Retrieval/list_test_pairs.txt', 'rb') as f:

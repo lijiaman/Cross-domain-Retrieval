@@ -67,7 +67,7 @@ def load_batchsize_images(batch_size=128):
 	x_batch = []
 	y_batch = []
         y_index = []
-	with open(tmp+'list_category_val.txt') as f:
+	with open(tmp+'list_category_train.txt') as f:
 		lines = random.sample(f.readlines(),batch_size)
     	#print lines
     	        for line in lines:
@@ -286,5 +286,5 @@ def load_test_images(test_num=100):
 #print "y_batch.shape:"
 #print y_batch.shape
 #get_toy_dataset()
-dict = get_img_bbox_dict()
-get_bbox_file(dict)
+#dict = get_img_bbox_dict()
+#get_bbox_file(dict)

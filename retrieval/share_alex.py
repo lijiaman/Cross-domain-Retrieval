@@ -36,7 +36,7 @@ dist_square_vec = tf.reduce_sum(tf.square(tf.sub(y_street, y_shop)), 1)
 
 ones = tf.constant(1.0, dtype="float", shape=[batch_size,])
 zero = tf.constant(0.0, dtype="float", shape=[batch_size,])
-margin = tf.constant(0.05, dtype="float", shape=[batch_size,])
+margin = tf.constant(0.03, dtype="float", shape=[batch_size,])
 #For pair
 #pred_pair = tf.less(dist_square_vec, margin)
 #triplet_loss_pair = tf.select(pred_pair, dist_square_vec, margin)
@@ -59,9 +59,9 @@ log_dir = 'alex_triplet_share'
 train_writer = tf.train.SummaryWriter(log_dir+'/train')
 val_writer = tf.train.SummaryWriter(log_dir+'/val')
 # train
-n_epoch = 500
+n_epoch = 5000
 global_step = tf.Variable(0)
-starter_learning_rate = 0.00005
+starter_learning_rate = 0.000001
 learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 15, 0.96, staircase=True)
 print_freq = 1
 
@@ -84,7 +84,7 @@ for epoch in range(n_epoch):
         iter_show += 1
         train_writer.add_summary(train_summary, iter_show)
 
-        if iter % 1 == 0:
+        if epoch % 10 == 0:
             print_time = time.strftime(ISOTIMEFORMAT, time.localtime())
             print("{0} Epoch: {1}, Train iteration: {2}, lr: {3}".format(print_time, epoch+1, iter+1, lr))
             print("   Train Loss: %f" % err)
@@ -94,6 +94,7 @@ for epoch in range(n_epoch):
 
  
 #    val_triplet_loss, val_dsquare, batch_val_size = 0, 0, 32
+#
 #    #val_iters = 1518
 #    val_iters = 2
 #      

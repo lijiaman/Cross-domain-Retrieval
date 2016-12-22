@@ -1,5 +1,4 @@
 import tensorflow as tf
-import tensorlayer as tl
 import os
 import numpy as np
 import time
@@ -34,14 +33,14 @@ tf.scalar_summary('Top5-Acc', top5_acc)
 tf.scalar_summary('Top10-Acc', top10_acc)
 
 merged = tf.merge_all_summaries()
-log_dir = 'bbox_visual_finetune'
+log_dir = 'alex_full'
 train_writer = tf.train.SummaryWriter(log_dir+'/train')
 val_writer = tf.train.SummaryWriter(log_dir+'/val')
 # train
-n_epoch = 50
+n_epoch = 30
 global_step = tf.Variable(0)
 starter_learning_rate = 0.000001
-learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 1635, 0.96, staircase=True)
+learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 1000, 0.96, staircase=True)
 print_freq = 1
 
 train_op = tf.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(cost, global_step=global_step)
@@ -56,7 +55,7 @@ for epoch in range(n_epoch):
     start_time = time.time()
     iter_per_epoch = 1635
     for iter in xrange(iter_per_epoch):
-    	x_batch, y_batch = input.load_batchsize_bbox_images(batch_size)
+    	x_batch, y_batch = input.load_batchsize_images(batch_size)
         feed_dict = {x: x_batch, y_: y_batch, train_mode:True}
         #conv1, conv2, conv3, conv4, conv5, fc8, fc7, fc6, pool3 = sess.run([network.conv1, network.conv2, network.conv3, network.conv4, network.conv5, network.fc8, network.fc7, network.fc6, network.pool3], feed_dict=feed_dict)
         _, err, ac, top5_ac, top10_ac, lr, train_summary = sess.run([train_op, cost, acc, top5_acc, top10_acc, learning_rate, merged], feed_dict=feed_dict)
@@ -72,7 +71,7 @@ for epoch in range(n_epoch):
             print("   Top5 Acc: %f" % top5_ac)
             print("   Top10 Acc: %f" % top10_ac)
 
-        x_val_batch, y_val_batch = input.load_val_bbox_images(batch_size)
+        x_val_batch, y_val_batch = input.load_val_images(batch_size)
         feed_dict_val = {x: x_val_batch, y_: y_val_batch, train_mode:False}
         val_err, val_ac, val_top5_ac, val_top10_ac, val_summary = sess.run([cost, acc, top5_acc, top10_acc, merged], feed_dict=feed_dict_val)
         val_writer.add_summary(val_summary, iter_show)  
@@ -91,7 +90,7 @@ for epoch in range(n_epoch):
         test_iters = 312
         for iter_test in xrange(test_iters):
             #print iter_test
-            x_test_batch, y_test_batch = input.load_test_bbox_images(batch_test_size)
+            x_test_batch, y_test_batch = input.load_test_images(batch_test_size)
             feed_dict = {x: x_test_batch, y_: y_test_batch, train_mode:False}
             err, ac, top5_ac, top10_ac = sess.run([cost, acc, top5_acc, top10_acc], feed_dict=feed_dict)
             test_loss += err; test_acc += ac; test_top5_acc += top5_ac; test_top10_acc += top10_ac
@@ -99,6 +98,9 @@ for epoch in range(n_epoch):
         print("   Test Top1-Acc: %f" % (test_acc/ test_iters))
         print("   Test Top5-Acc: %f" % (test_top5_acc / test_iters))
         print("   Test Top10-Acc: %f" % (test_top10_acc / test_iters))
+        with open('test_result.txt','a') as w_f:
+            w_f.write(str(epoch)+'\t'+str(test_loss/test_iters)+'\t'+str(test_acc/test_iters)+'\t'+str(test_top5_acc/test_iters)+'\t'+str(test_top10_acc/test_iters)+'\n')
+        w_f.close()
         network.save_npy(sess=sess)
 
 train_writer.close()
